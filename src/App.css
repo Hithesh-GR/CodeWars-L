@@ -1,0 +1,25 @@
+
+#appBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-flow: wrap;
+}
+#heading {
+  color: black;
+  font-style: oblique;
+  display: flex;
+  font-size: xx-large;
+}
+img{
+  max-width: 30%;
+  max-height: 30%;
+  display: block;
+}
+.textfieldRow{
+    width: 110%;
+    display: flex;
+    justify-content: space-around;
+    margin-left: -70px;
+    margin-top: 500px;
+}
