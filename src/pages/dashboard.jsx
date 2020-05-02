@@ -101,18 +101,23 @@ export default class Dashboard extends React.Component {
     };
     addDataToTheTable = event => {
         try {
+            const { version, startDate, releaseDate } = this.state;
             event.preventDefault();
-            if (!this.state.version) {
-                alert("version cannot be empty..!");
-            } else if (!this.state.startDate) {
+            if(!version){
+                alert("Enter required input fields data..!");
+            } 
+            // else if (!this.state.version) {
+            //     alert("Version cannot be empty..!");
+            // } 
+            else if (!startDate) {
                 alert("Start Date cannot be empty..!");
-            } else if (!this.state.releaseDate) {
+            } else if (!releaseDate) {
                 alert("Release Date cannot be empty..!");
-            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.startDate)) {
+            } else if (!/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(startDate)) {
                 alert("Invalid Start Date Format..!");
-            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.releaseDate)) {
+            } else if (!/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(releaseDate)) {
                 alert("Invalid Release Date Format..!");
-            } else if (this.state.startDate >= this.state.releaseDate) {
+            } else if (startDate > releaseDate) {
                 alert("Release Date should greater than Start Date..!");
             } else {
                 const { version, startDate, releaseDate, description } = this.state;
@@ -136,18 +141,19 @@ export default class Dashboard extends React.Component {
     };
     updateTableCellData = event => {
         try {
+            const { version, startDate, releaseDate } = this.state;
             event.preventDefault();
-            if (!this.state.version) {
-                alert("version cannot be empty..!");
-            } else if (!this.state.startDate) {
+            if (!version) {
+                alert("Version cannot be empty..!");
+            } else if (!startDate) {
                 alert("Start Date cannot be empty..!");
-            } else if (!this.state.releaseDate) {
+            } else if (!releaseDate) {
                 alert("Release Date cannot be empty..!");
-            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.startDate)) {
+            } else if (!/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(startDate)) {
                 alert("Invalid Start Date Format..!");
-            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.releaseDate)) {
+            } else if (!/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(releaseDate)) {
                 alert("Invalid Release Date Format..!");
-            } else if (this.state.startDate >= this.state.releaseDate) {
+            } else if (startDate > releaseDate) {
                 alert("Release Date should greater than Start Date..!");
             } else {
                 const {
@@ -274,7 +280,6 @@ export default class Dashboard extends React.Component {
             />
             <TextField
                 type="text"
-                required
                 name="description"
                 label="Description"
                 value={this.state.description}
