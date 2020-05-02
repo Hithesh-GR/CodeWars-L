@@ -5,14 +5,10 @@ import './App.css'
 export default class App extends React.Component {
   render() {
     return (
-      <div>
         <Router>
-          <div>
             <Route path="/dashboard" component={dashBoard}></Route>
             <Route path="/" exact component={dashBoard}></Route>
-          </div>
         </Router>
-      </div>
     );
   }
 }

@@ -1,3 +1,6 @@
+#root{
+  height: 100vh
+}
 #appBar {
   display: flex;
   justify-content: space-between;
@@ -10,17 +13,15 @@
   display: flex;
   font-size: xx-large;
 }
-img{
+img {
   max-width: 30%;
   max-height: 30%;
   display: block;
 }
-.textfieldRow{
-    width: 110%;
-    display: flex;
-    justify-content: space-around;
-    margin-left: -70px;
-    margin-top: 200px;
+.textfieldRow {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 50px;
 }
 .moreActions {
   cursor: pointer;
@@ -73,16 +74,30 @@ img{
   pointer-events: all;
 }
 /* status-bar */
-.status-bar{
+.status-bar {
   position: relative;
   width: 100px;
   height: 15px;
   border-radius: 15px;
   background: blue;
 }
-.status{
+.status {
   position: absolute;
-  height:15px;
+  height: 15px;
   border-radius: 15px;
   background: orange;
+}
+.addEditTextField {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.addEditTextField > div{
+  margin-bottom: 2%;
+}
+.table-wrapper{
+  margin-top: 2%;
+  width:100%;
+  height: 100%;
 }

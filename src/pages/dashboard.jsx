@@ -1,4 +1,5 @@
 import React from "react";
+import CustomDialog from "./customDialog";
 import {
     createMuiTheme,
     MuiThemeProvider,
@@ -11,9 +12,12 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Chip,
+    Avatar
 } from "@material-ui/core";
 import PlusIcon from "@material-ui/icons/Add";
+import EditIcon from "@material-ui/icons/Edit";
 import "../App.css";
 import MoreActions from "./moreActions";
 import CustomProgressBar from "./customProgressBar";
@@ -28,15 +32,17 @@ const theme = createMuiTheme({
                 height: "fit-content"
             }
         },
-        MuiFilledInput: {
-            input: {
-                padding: "10px 50px 10px"
+        MuiPaper: {
+            elevation1: {
+                margin: "0 3%",
+                maxHeight: "490px",
+                overflowY: "scroll"
             }
         }
-    },
-    typography: {
-        useNextVariants: true
     }
+    //   typography: {
+    //     useNextVariants: true
+    //   }
 });
 const columns = [
     { id: "version", label: "Version", minWidth: 150 },
@@ -74,22 +80,71 @@ export default class Dashboard extends React.Component {
         startDate: "",
         releaseDate: "",
         description: "",
-        status: "Released",
+        status: <Chip
+        color="secondary"
+        variant="outlined"
+        avatar={<Avatar>U</Avatar>}
+        label="UNRELEASED"
+    />,
         progress: "60%",
+        isEditButton: false,
+        index: "",
         rows: []
     };
-    addDataToTheTable = () => {
-        const { version, startDate, releaseDate, description } = this.state;
-        let rowData = this.state.rows;
-        rowData.push(this.createData(version, startDate, releaseDate, description));
-        console.log("rowd", rowData);
-        this.setState({
-            rows: rowData,
-            version: "",
-            startDate: "",
-            releaseDate: "",
-            description: ""
-        });
+    addDataToTheTable = (event) => {
+        try {
+            event.preventDefault();
+            if (!this.state.version) {
+                alert("version cannot be empty..!");
+            } else if (!this.state.startDate) {
+                alert("startDate cannot be empty..!");
+            } else {
+                const { version, startDate, releaseDate, description } = this.state;
+                let rowData = this.state.rows;
+                rowData.push(this.createData(version, startDate, releaseDate, description));
+                this.setState({
+                    rows: rowData,
+                    version: "",
+                    startDate: "",
+                    releaseDate: "",
+                    description: "",
+                    dialogOpen: false,
+                    isEditButton: false
+                });
+            }
+        } catch (err) {
+            console.log("error at addDataToTheTable");
+        }
+    };
+    updateTableCellData = (event) => {
+        try {
+            event.preventDefault();
+            if (!this.state.version) {
+                alert("version cannot be empty..!");
+            } else if (!this.state.startDate) {
+                alert("startDate cannot be empty..!");
+            } else {
+                const { version, startDate, releaseDate, description } = this.state;
+                let rowData = this.state.rows;
+                rowData[this.state.index] = this.createData(
+                    version,
+                    startDate,
+                    releaseDate,
+                    description
+                );
+                this.setState({
+                    rows: rowData,
+                    version: "",
+                    startDate: "",
+                    releaseDate: "",
+                    description: "",
+                    dialogOpen: false,
+                    isEditButton: false
+                });
+            }
+        } catch (err) {
+            console.log("error at updateTableCellData");
+        }
     };
     updateTableData = ({ target: { name, value } }) => {
         this.setState({
@@ -101,65 +156,151 @@ export default class Dashboard extends React.Component {
         return { version, status, progress, startDate, releaseDate, description };
     };
     deleteTableCellData = ind => {
-        console.log("inde", ind);
         let rowData = this.state.rows;
         rowData.splice(ind, 1);
         this.setState({
             rows: rowData
         });
     };
-    //   setTableCell = (columnId, index, value) => {
-    //     if (columnId === "action") {
-    //       return (
-    //         <MoreActions
-    //           index={index}
-    //           deleteTableCellData={this.deleteTableCellData}
-    //         />
-    //       );
-    //     }
-    //     else if(columnId === "progress"){
-    //         return(
-    //             <CustomProgressBar
-    //             progressValue={this.state.progress}
-    //           />
-    //         )
-    //     }else if(columnId === "status"){
-    //         const status = this.state.progress <=100 && (this.state.progress === 0? "In Progress": this.state.progress >= 1 && this.state.progress<=99?"Unreleased":"Released"); 
-    //         return (
-    //             status
-    //         )
-    //     }else {
-    //         return value
-    //     }
-    //   };
-    render() {
+    handleEnter = (event) => {
+        try {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                this.addDataToTheTable(event);
+            }
+        } catch (err) {
+            console.log("error at handleEnter");
+        }
+    };
+    closeDialog = () => {
+        this.setState({
+            dialogOpen: false,
+            version: "",
+            startDate: "",
+            releaseDate: "",
+            description: "",
+            isEditButton: false
+        });
+    };
+    textFieldData = () => (
+        <div
+            className={this.state.dialogOpen ? "addEditTextField" : "textfieldRow"}
+        >
+            <TextField
+                type="text"
+                label="Version"
+                name="version"
+                value={this.state.version}
+                placeholder="Version"
+                onChange={this.updateTableData}
+                onKeyPress={this.handleEnter}
+                variant="filled"
+                InputProps={{
+                    disableUnderline: true
+                }}
+            />
+            <TextField
+                type="text"
+                name="startDate"
+                label="StartDate"
+                value={this.state.startDate}
+                placeholder="Start Date"
+                onChange={this.updateTableData}
+                onKeyPress={this.handleEnter}
+                variant="filled"
+                InputProps={{
+                    disableUnderline: true
+                }}
+            />
+            <TextField
+                type="text"
+                name="releaseDate"
+                label="ReleaseDate"
+                value={this.state.releaseDate}
+                placeholder="Release Date"
+                onChange={this.updateTableData}
+                onKeyPress={this.handleEnter}
+                variant="filled"
+                InputProps={{
+                    disableUnderline: true
+                }}
+            />
+            <TextField
+                type="text"
+                name="description"
+                label="Description"
+                value={this.state.description}
+                placeholder="Description"
+                onChange={this.updateTableData}
+                onKeyPress={this.handleEnter}
+                variant="filled"
+                InputProps={{
+                    disableUnderline: true
+                }}
+            />
+            {this.state.isEditButton ? (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<EditIcon />}
+                    onClick={this.updateTableCellData}
+                >
+                    Update
+                </Button>
+            ) : (
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<PlusIcon />}
+                        onClick={this.addDataToTheTable}
+                    >
+                        Add
+                    </Button>
+                )}
+        </div>
+    );
+    openDialog = dialogOpen => {
+        this.setState({
+            dialogOpen
+        });
+    };
+    editTableCellData = i => {
         const { rows } = this.state;
+        this.setState({
+            dialogOpen: true,
+            isEditButton: true,
+            version: rows[i].version,
+            startDate: rows[i].startDate,
+            releaseDate: rows[i].releaseDate,
+            description: rows[i].description,
+            index: i
+        });
+        console.log("edit", i);
+    };
+    render() {
+        const { rows, dialogOpen } = this.state;
         return (
             <MuiThemeProvider theme={theme}>
                 <div
                     style={{
-                        display: "flex",
-                        justifyContent: "center",
                         width: "100%",
-                        height: "100vh",
-                        flexWrap: "wrap",
                         backgroundColor: "#fff"
                     }}
                 >
                     <AppBar position="static" align="center">
                         <div id="appBar">
                             <div style={{ padding: "20px 0px 10px 20px" }}>
-                                <marquee behavior="slide" direction="left" scrollamount="30">
-                                    <img
-                                        src={require("../Assets/images/logward.png")}
-                                        alt="logward icon"
-                                    />
-                                </marquee>
+                                {/* <marquee behavior="slide" direction="left" scrollamount="30"> */}
+                                <img
+                                    src={require("../Assets/images/logward.png")}
+                                    alt="logward icon"
+                                />
+                                {/* </marquee> */}
                                 <div id="heading">Releases</div>
                             </div>
                         </div>
                     </AppBar>
-                    <div>
+                    <div className="table-wrapper">
                         <div>
                             <Paper>
                                 <TableContainer>
@@ -194,6 +335,10 @@ export default class Dashboard extends React.Component {
                                                                         {column.id === "action" ? (
                                                                             <MoreActions
                                                                                 index={index}
+                                                                                openDialog={this.openDialog}
+                                                                                editTableCellData={
+                                                                                    this.editTableCellData
+                                                                                }
                                                                                 deleteTableCellData={
                                                                                     this.deleteTableCellData
                                                                                 }
@@ -216,70 +361,23 @@ export default class Dashboard extends React.Component {
                                 </TableContainer>
                             </Paper>
                         </div>
-                        <div className="textfieldRow">
-                            <div>
-                                <TextField
-                                    type="text"
-                                    name="version"
-                                    value={this.state.version}
-                                    placeholder="Version name"
-                                    onChange={this.updateTableData}
-                                    variant="filled"
-                                    InputProps={{
-                                        disableUnderline: true
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <TextField
-                                    type="text"
-                                    name="startDate"
-                                    value={this.state.startDate}
-                                    placeholder="Start Date"
-                                    onChange={this.updateTableData}
-                                    variant="filled"
-                                    InputProps={{
-                                        disableUnderline: true
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <TextField
-                                    type="text"
-                                    name="releaseDate"
-                                    value={this.state.releaseDate}
-                                    placeholder="Release Date"
-                                    onChange={this.updateTableData}
-                                    variant="filled"
-                                    InputProps={{
-                                        disableUnderline: true
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <TextField
-                                    type="text"
-                                    name="description"
-                                    value={this.state.description}
-                                    placeholder="Description"
-                                    onChange={this.updateTableData}
-                                    variant="filled"
-                                    InputProps={{
-                                        disableUnderline: true
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    startIcon={<PlusIcon />}
-                                    onClick={this.addDataToTheTable}
-                                >
-                                    Add
-                </Button>
-                            </div>
-                        </div>
+                        {dialogOpen ? (
+                            <CustomDialog
+                                title={this.state.isEditButton ? "Update table data" : "Add table data"}
+                                open={dialogOpen}
+                                onClose={this.closeDialog}
+                                contentStyle={{
+                                    maxWidth: "700px",
+                                    height: "35vh",
+                                    padding: "16px 0 16px",
+                                    transform: "none"
+                                }}
+                            >
+                                {this.textFieldData()}
+                            </CustomDialog>
+                        ) : (
+                                this.textFieldData()
+                            )}
                     </div>
                 </div>
             </MuiThemeProvider>

@@ -21,10 +21,11 @@ export default class MoreActions extends Component {
             anchorEl: e.currentTarget
         });
     };
-    editTableCell = () => {
+    editTableData = () => {
+        this.props.editTableCellData(this.props.index);
         this.hideMenuItems();
     };
-    deleteTableCell = () => {
+    deleteTableRow = () => {
         this.props.deleteTableCellData(this.props.index);
         this.hideMenuItems();
     };
@@ -32,6 +33,10 @@ export default class MoreActions extends Component {
         this.setState({
             anchorEl: null
         });
+    }
+    addTableData = () => {
+        this.props.openDialog(true);
+        this.hideMenuItems();
     }
     render() {
         const { anchorEl } = this.state;
@@ -52,11 +57,12 @@ export default class MoreActions extends Component {
                     open={Boolean(anchorEl)}
                     onClose={this.handleClose}
                 >
-                    <MenuItem onClick={this.editTableCell}>Add</MenuItem>
-                    <MenuItem onClick={this.editTableCell}>Edit</MenuItem>
-                    <MenuItem onClick={this.deleteTableCell}>Delete</MenuItem>
+                    <MenuItem onClick={this.addTableData}>Add</MenuItem>
+                    <MenuItem onClick={this.editTableData}>Edit</MenuItem>
+                    <MenuItem onClick={this.deleteTableRow}>Delete</MenuItem>
                 </Menu>
             </>
         );
     }
 }
+
