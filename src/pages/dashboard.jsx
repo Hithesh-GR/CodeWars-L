@@ -21,6 +21,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import "../App.css";
 import MoreActions from "./moreActions";
 import CustomProgressBar from "./customProgressBar";
+import Draggable from 'react-draggable';
 const theme = createMuiTheme({
     overrides: {
         MuiAppBar: {
@@ -81,11 +82,11 @@ export default class Dashboard extends React.Component {
         releaseDate: "",
         description: "",
         status: <Chip
-        color="secondary"
-        variant="outlined"
-        avatar={<Avatar>U</Avatar>}
-        label="UNRELEASED"
-    />,
+            color="secondary"
+            variant="outlined"
+            avatar={<Avatar>U</Avatar>}
+            label="UNRELEASED"
+        />,
         progress: "60%",
         isEditButton: false,
         index: "",
@@ -296,7 +297,7 @@ export default class Dashboard extends React.Component {
                                     alt="logward icon"
                                 />
                                 {/* </marquee> */}
-                                <div id="heading">Releases</div>
+                                <div id="heading">Version Releases</div>
                             </div>
                         </div>
                     </AppBar>
@@ -320,40 +321,47 @@ export default class Dashboard extends React.Component {
                                         </TableHead>
                                         <TableBody>
                                             {rows &&
+                                                !rows.length ? <p style={{display:"flex",justifyContent:"center",color:"tomato"}}>There is no data to display...!</p> :
                                                 rows.map((row, index) => {
                                                     return (
-                                                        <TableRow
-                                                            hover
-                                                            role="checkbox"
-                                                            tabIndex={-1}
-                                                            key={index}
+                                                        <Draggable
+                                                            // axis="y"
+                                                            defaultPosition={{ x: 0, y: 0 }}
+                                                        // position={null}
                                                         >
-                                                            {columns.map(column => {
-                                                                const value = row[column.id];
-                                                                return (
-                                                                    <TableCell key={column.id}>
-                                                                        {column.id === "action" ? (
-                                                                            <MoreActions
-                                                                                index={index}
-                                                                                openDialog={this.openDialog}
-                                                                                editTableCellData={
-                                                                                    this.editTableCellData
-                                                                                }
-                                                                                deleteTableCellData={
-                                                                                    this.deleteTableCellData
-                                                                                }
-                                                                            />
-                                                                        ) : column.id === "progress" ? (
-                                                                            <CustomProgressBar
-                                                                                progressValue={this.state.progress}
-                                                                            />
-                                                                        ) : (
-                                                                                    value
-                                                                                )}
-                                                                    </TableCell>
-                                                                );
-                                                            })}
-                                                        </TableRow>
+                                                            <TableRow
+                                                                hover
+                                                                role="checkbox"
+                                                                tabIndex={-1}
+                                                                key={index}
+                                                            >
+                                                                {columns.map(column => {
+                                                                    const value = row[column.id];
+                                                                    return (
+                                                                        <TableCell key={column.id}>
+                                                                            {column.id === "action" ? (
+                                                                                <MoreActions
+                                                                                    index={index}
+                                                                                    openDialog={this.openDialog}
+                                                                                    editTableCellData={
+                                                                                        this.editTableCellData
+                                                                                    }
+                                                                                    deleteTableCellData={
+                                                                                        this.deleteTableCellData
+                                                                                    }
+                                                                                />
+                                                                            ) : column.id === "progress" ? (
+                                                                                <CustomProgressBar
+                                                                                    progressValue={this.state.progress}
+                                                                                />
+                                                                            ) : (
+                                                                                        value
+                                                                                    )}
+                                                                        </TableCell>
+                                                                    );
+                                                                })}
+                                                            </TableRow>
+                                                        </Draggable>
                                                     );
                                                 })}
                                         </TableBody>

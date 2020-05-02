@@ -8,7 +8,7 @@
   flex-flow: wrap;
 }
 #heading {
-  color: black;
+  color: rgb(103, 140, 148);
   font-style: oblique;
   display: flex;
   font-size: xx-large;
