@@ -4,8 +4,9 @@ export default class CustomProgressBar extends Component {
         return (
             <div className="progress-wrapper">
                 <div className="status-bar">
-                <div className="status" style={{width: this.props.progressValue}}></div>
+                    <div className="status" style={{ width: this.props.progressValue }}></div>
                 </div>
+                <span className="progress-percent">{this.props.progressValue}</span>
             </div>
         )
     }

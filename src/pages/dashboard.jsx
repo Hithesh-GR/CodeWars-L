@@ -1,5 +1,6 @@
 import React from "react";
 import CustomDialog from "./customDialog";
+import MenuItem from "@material-ui/core/MenuItem";
 import {
     createMuiTheme,
     MuiThemeProvider,
@@ -12,16 +13,14 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow,
-    Chip,
-    Avatar
+    TableRow
 } from "@material-ui/core";
 import PlusIcon from "@material-ui/icons/Add";
 import EditIcon from "@material-ui/icons/Edit";
 import "../App.css";
 import MoreActions from "./moreActions";
 import CustomProgressBar from "./customProgressBar";
-import Draggable from 'react-draggable';
+import Draggable from "react-draggable";
 const theme = createMuiTheme({
     overrides: {
         MuiAppBar: {
@@ -74,35 +73,53 @@ const columns = [
         minWidth: 100
     }
 ];
-
+const statuses = [
+    {
+        value: "IN PROGRESS",
+        label: "IN PROGRESS"
+    },
+    {
+        value: "RELEASED",
+        label: "RELEASED"
+    },
+    {
+        value: "UNRELEASED",
+        label: "UNRELEASED"
+    }
+];
 export default class Dashboard extends React.Component {
     state = {
         version: "",
         startDate: "",
         releaseDate: "",
         description: "",
-        status: <Chip
-            color="secondary"
-            variant="outlined"
-            avatar={<Avatar>U</Avatar>}
-            label="UNRELEASED"
-        />,
-        progress: "60%",
+        status: "IN PROGRESS",
+        progress: "0%",
         isEditButton: false,
         index: "",
         rows: []
     };
-    addDataToTheTable = (event) => {
+    addDataToTheTable = event => {
         try {
             event.preventDefault();
             if (!this.state.version) {
                 alert("version cannot be empty..!");
             } else if (!this.state.startDate) {
-                alert("startDate cannot be empty..!");
+                alert("Start Date cannot be empty..!");
+            } else if (!this.state.releaseDate) {
+                alert("Release Date cannot be empty..!");
+            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.startDate)) {
+                alert("Invalid Start Date Format..!");
+            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.releaseDate)) {
+                alert("Invalid Release Date Format..!");
+            } else if (this.state.startDate >= this.state.releaseDate) {
+                alert("Release Date should greater than Start Date..!");
             } else {
                 const { version, startDate, releaseDate, description } = this.state;
                 let rowData = this.state.rows;
-                rowData.push(this.createData(version, startDate, releaseDate, description));
+                rowData.push(
+                    this.createData(version, startDate, this.state.progress, releaseDate, description)
+                );
                 this.setState({
                     rows: rowData,
                     version: "",
@@ -117,21 +134,36 @@ export default class Dashboard extends React.Component {
             console.log("error at addDataToTheTable");
         }
     };
-    updateTableCellData = (event) => {
+    updateTableCellData = event => {
         try {
             event.preventDefault();
             if (!this.state.version) {
                 alert("version cannot be empty..!");
             } else if (!this.state.startDate) {
-                alert("startDate cannot be empty..!");
+                alert("Start Date cannot be empty..!");
+            } else if (!this.state.releaseDate) {
+                alert("Release Date cannot be empty..!");
+            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.startDate)) {
+                alert("Invalid Start Date Format..!");
+            } else if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(this.state.releaseDate)) {
+                alert("Invalid Release Date Format..!");
+            } else if (this.state.startDate >= this.state.releaseDate) {
+                alert("Release Date should greater than Start Date..!");
             } else {
-                const { version, startDate, releaseDate, description } = this.state;
+                const {
+                    version,
+                    startDate,
+                    releaseDate,
+                    description,
+                    progress
+                } = this.state;
                 let rowData = this.state.rows;
                 rowData[this.state.index] = this.createData(
                     version,
                     startDate,
+                    progress,
                     releaseDate,
-                    description
+                    description,
                 );
                 this.setState({
                     rows: rowData,
@@ -140,6 +172,8 @@ export default class Dashboard extends React.Component {
                     releaseDate: "",
                     description: "",
                     dialogOpen: false,
+                    status: "IN PROGRESS",
+                    progress: "0%",
                     isEditButton: false
                 });
             }
@@ -148,12 +182,21 @@ export default class Dashboard extends React.Component {
         }
     };
     updateTableData = ({ target: { name, value } }) => {
+        if (name === "status" && value === "RELEASED") {
+            this.setState({
+                progress: "100%"
+            });
+        } else if (name === "status" && value === "UNRELEASED") {
+            this.setState({
+                progress: "60%"
+            });
+        }
         this.setState({
             [name]: value
         });
     };
-    createData = (version, startDate, releaseDate, description) => {
-        const { status, progress } = this.state;
+    createData = (version, startDate, progress, releaseDate, description) => {
+        const { status } = this.state;
         return { version, status, progress, startDate, releaseDate, description };
     };
     deleteTableCellData = ind => {
@@ -163,9 +206,9 @@ export default class Dashboard extends React.Component {
             rows: rowData
         });
     };
-    handleEnter = (event) => {
+    handleEnter = event => {
         try {
-            if (event.key === 'Enter') {
+            if (event.key === "Enter") {
                 event.preventDefault();
                 this.addDataToTheTable(event);
             }
@@ -189,56 +232,78 @@ export default class Dashboard extends React.Component {
         >
             <TextField
                 type="text"
+                required
                 label="Version"
                 name="version"
                 value={this.state.version}
                 placeholder="Version"
                 onChange={this.updateTableData}
                 onKeyPress={this.handleEnter}
-                variant="filled"
+                variant="outlined"
                 InputProps={{
                     disableUnderline: true
                 }}
             />
             <TextField
                 type="text"
+                required
                 name="startDate"
                 label="StartDate"
                 value={this.state.startDate}
                 placeholder="Start Date"
                 onChange={this.updateTableData}
                 onKeyPress={this.handleEnter}
-                variant="filled"
+                variant="outlined"
                 InputProps={{
                     disableUnderline: true
                 }}
             />
             <TextField
                 type="text"
+                required
                 name="releaseDate"
                 label="ReleaseDate"
                 value={this.state.releaseDate}
                 placeholder="Release Date"
                 onChange={this.updateTableData}
                 onKeyPress={this.handleEnter}
-                variant="filled"
+                variant="outlined"
                 InputProps={{
                     disableUnderline: true
                 }}
             />
             <TextField
                 type="text"
+                required
                 name="description"
                 label="Description"
                 value={this.state.description}
                 placeholder="Description"
                 onChange={this.updateTableData}
                 onKeyPress={this.handleEnter}
-                variant="filled"
+                variant="outlined"
                 InputProps={{
                     disableUnderline: true
                 }}
             />
+            {this.state.isEditButton && (
+                <TextField
+                    id="outlined-select-currency"
+                    select
+                    label="Status"
+                    name="status"
+                    value={this.state.status}
+                    onChange={this.updateTableData}
+                    helperText="Please select version status"
+                    variant="outlined"
+                >
+                    {statuses.map(option => (
+                        <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                        </MenuItem>
+                    ))}
+                </TextField>
+            )}
             {this.state.isEditButton ? (
                 <Button
                     variant="contained"
@@ -276,7 +341,6 @@ export default class Dashboard extends React.Component {
             description: rows[i].description,
             index: i
         });
-        console.log("edit", i);
     };
     render() {
         const { rows, dialogOpen } = this.state;
@@ -320,50 +384,60 @@ export default class Dashboard extends React.Component {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {rows &&
-                                                !rows.length ? <p style={{display:"flex",justifyContent:"center",color:"tomato"}}>There is no data to display...!</p> :
-                                                rows.map((row, index) => {
-                                                    return (
-                                                        <Draggable
-                                                            // axis="y"
-                                                            defaultPosition={{ x: 0, y: 0 }}
-                                                        // position={null}
-                                                        >
-                                                            <TableRow
-                                                                hover
-                                                                role="checkbox"
-                                                                tabIndex={-1}
-                                                                key={index}
+                                            {rows && !rows.length ? (
+                                                <p
+                                                    style={{
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        color: "tomato"
+                                                    }}
+                                                >
+                                                    There is no data to display...!
+                        </p>
+                                            ) : (
+                                                    rows.map((row, index) => {
+                                                        return (
+                                                            <Draggable
+                                                                // axis="y"
+                                                                defaultPosition={{ x: 0, y: 0 }}
+                                                            // position={null}
                                                             >
-                                                                {columns.map(column => {
-                                                                    const value = row[column.id];
-                                                                    return (
-                                                                        <TableCell key={column.id}>
-                                                                            {column.id === "action" ? (
-                                                                                <MoreActions
-                                                                                    index={index}
-                                                                                    openDialog={this.openDialog}
-                                                                                    editTableCellData={
-                                                                                        this.editTableCellData
-                                                                                    }
-                                                                                    deleteTableCellData={
-                                                                                        this.deleteTableCellData
-                                                                                    }
-                                                                                />
-                                                                            ) : column.id === "progress" ? (
-                                                                                <CustomProgressBar
-                                                                                    progressValue={this.state.progress}
-                                                                                />
-                                                                            ) : (
-                                                                                        value
-                                                                                    )}
-                                                                        </TableCell>
-                                                                    );
-                                                                })}
-                                                            </TableRow>
-                                                        </Draggable>
-                                                    );
-                                                })}
+                                                                <TableRow
+                                                                    hover
+                                                                    role="checkbox"
+                                                                    tabIndex={-1}
+                                                                    key={index}
+                                                                >
+                                                                    {columns.map(column => {
+                                                                        const value = row[column.id];
+                                                                        return (
+                                                                            <TableCell key={column.id}>
+                                                                                {column.id === "action" ? (
+                                                                                    <MoreActions
+                                                                                        index={index}
+                                                                                        openDialog={this.openDialog}
+                                                                                        editTableCellData={
+                                                                                            this.editTableCellData
+                                                                                        }
+                                                                                        deleteTableCellData={
+                                                                                            this.deleteTableCellData
+                                                                                        }
+                                                                                    />
+                                                                                ) : column.id === "progress" ? (
+                                                                                    <CustomProgressBar
+                                                                                        progressValue={row.progress}
+                                                                                    />
+                                                                                ) : (
+                                                                                            value
+                                                                                        )}
+                                                                            </TableCell>
+                                                                        );
+                                                                    })}
+                                                                </TableRow>
+                                                            </Draggable>
+                                                        );
+                                                    })
+                                                )}
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
@@ -371,7 +445,11 @@ export default class Dashboard extends React.Component {
                         </div>
                         {dialogOpen ? (
                             <CustomDialog
-                                title={this.state.isEditButton ? "Update table data" : "Add table data"}
+                                title={
+                                    this.state.isEditButton
+                                        ? "Update table data"
+                                        : "Add table data"
+                                }
                                 open={dialogOpen}
                                 onClose={this.closeDialog}
                                 contentStyle={{
