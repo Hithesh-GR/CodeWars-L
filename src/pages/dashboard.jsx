@@ -20,7 +20,6 @@ import EditIcon from "@material-ui/icons/Edit";
 import "../App.css";
 import MoreActions from "./moreActions";
 import CustomProgressBar from "./customProgressBar";
-import Draggable from "react-draggable";
 const theme = createMuiTheme({
     overrides: {
         MuiAppBar: {
@@ -45,6 +44,11 @@ const theme = createMuiTheme({
     //   }
 });
 const columns = [
+    {
+        id: "drag",
+        label: "Drag",
+        minWidth: 170
+    },
     { id: "version", label: "Version", minWidth: 150 },
     { id: "status", label: "Status", minWidth: 150 },
     {
@@ -87,25 +91,63 @@ const statuses = [
         label: "UNRELEASED"
     }
 ];
+const closest = function (el, selector, rootNode) {
+    rootNode = rootNode || document.body;
+    console.log('rootNode:', rootNode);
+    const matchesSelector =
+        el.matches ||
+        el.webkitMatchesSelector ||
+        el.mozMatchesSelector ||
+        el.msMatchesSelector;
+    //   console.log('matchesSelector:', matchesSelector);
+    while (el) {
+        const flagRoot = el === rootNode;
+        //     console.log('flagRoot:', flagRoot);
+        if (flagRoot || matchesSelector.call(el, selector)) {
+            if (flagRoot) {
+                el = null;
+                //         console.log('flagRoot set el to null:', el);
+            }
+            //       console.log('break!');
+            break;
+        }
+        el = el.parentElement;
+        //     console.log('el = el.parentElement:', el);
+    }
+    //   console.log('closest:', el);
+    el.setAttribute('style', 'border: 50px solid red;');
+    return el;
+};
 export default class Dashboard extends React.Component {
-    state = {
-        version: "",
-        startDate: "",
-        releaseDate: "",
-        description: "",
-        status: "IN PROGRESS",
-        progress: "0%",
-        isEditButton: false,
-        index: "",
-        rows: []
-    };
+    constructor(props) {
+        super(props)
+        this.state = {
+            version: "",
+            startDate: "",
+            releaseDate: "",
+            description: "",
+            status: "IN PROGRESS",
+            progress: "0%",
+            isEditButton: false,
+            index: "",
+            drag: "drag",
+            dragIndex: -1,
+            draggedIndex: -1,
+            rows: []
+
+        };
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onDragStart = this.onDragStart.bind(this);
+        this.onDragEnter = this.onDragEnter.bind(this);
+        this.onDragEnd = this.onDragEnd.bind(this);
+    }
     addDataToTheTable = event => {
         try {
             const { version, startDate, releaseDate } = this.state;
             event.preventDefault();
-            if(!version){
+            if (!version) {
                 alert("Enter required input fields data..!");
-            } 
+            }
             // else if (!this.state.version) {
             //     alert("Version cannot be empty..!");
             // } 
@@ -347,6 +389,85 @@ export default class Dashboard extends React.Component {
             index: i
         });
     };
+    onMouseDown(e) {
+        console.log('target', e.target);
+
+        const target = this.getTrNode(e.target);
+
+        if (target) {
+            target.setAttribute('draggable', true);
+            target.ondragstart = this.onDragStart;
+            target.ondragend = this.onDragEnd;
+        }
+    }
+    getTrNode(target) {
+        //     console.log('dragContainer:', this.refs.dragContainer)
+        //     return closest(target, 'tr', this.refs.dragContainer.tableNode);
+        return closest(target, 'tr');
+    }
+    onDragStart(e) {
+        console.log('onDragStart', e.target);
+        const target = this.getTrNode(e.target);
+        console.log("target tr in dragstart", target)
+        debugger
+        if (target) {
+            //       e.dataTransfer.setData('Text', '');
+            e.dataTransfer.effectAllowed = 'move';
+            console.log('target.parentElement:', target.parentElement);
+            target.parentElement.ondragenter = this.onDragEnter;
+            target.parentElement.ondragover = function (ev) {
+                //         console.log('Tbody ondragover:',ev)
+                //         ev.target.dataTransfer.effectAllowed = 'none'
+                ev.preventDefault();
+                return true;
+            };
+            const dragIndex = target.rowIndex - 1;
+            console.log('dragIndex:', dragIndex);
+            this.setState({ dragIndex, draggedIndex: dragIndex });
+        }
+    }
+
+    onDragEnter(e) {
+        const target = this.getTrNode(e.target);
+        console.log('onDragEnter TR index:', target.rowIndex - 1);
+        this.setState({
+            draggedIndex: target ? target.rowIndex - 1 : -1,
+        });
+    }
+
+    onDragEnd(e) {
+        console.log('onDragEnd');
+        const target = this.getTrNode(e.target);
+        if (target) {
+            target.setAttribute('draggable', false);
+            target.ondragstart = null;
+            target.ondragend = null;
+            target.parentElement.ondragenter = null;
+            target.parentElement.ondragover = null;
+            this.changeRowIndex();
+        }
+    }
+
+    changeRowIndex() {
+        const result = {};
+        const currentState = this.state;
+        console.log('currentState:', currentState);
+        result.dragIndex = result.draggedIndex = -1;
+        if (
+            currentState.dragIndex >= 0 &&
+            currentState.dragIndex !== currentState.draggedIndex
+        ) {
+            const { dragIndex, draggedIndex, rows: oldData } = currentState;
+            const data = [...oldData];
+            //       const data = oldData;
+            const item = data.splice(dragIndex, 1)[0];
+            data.splice(draggedIndex, 0, item);
+            result.rows = data;
+            result.dragIndex = -1;
+            result.draggedIndex = -1;
+        }
+        this.setState(result);
+    }
     render() {
         const { rows, dialogOpen } = this.state;
         return (
@@ -398,48 +519,63 @@ export default class Dashboard extends React.Component {
                                                     }}
                                                 >
                                                     There is no data to display...!
-                        </p>
+                                                </p>
                                             ) : (
                                                     rows.map((row, index) => {
                                                         return (
-                                                            <Draggable
-                                                                // axis="y"
-                                                                defaultPosition={{ x: 0, y: 0 }}
-                                                            // position={null}
+                                                            <TableRow
+                                                                hover
+                                                                role="checkbox"
+                                                                tabIndex={-1}
+                                                                key={index}
                                                             >
-                                                                <TableRow
-                                                                    hover
-                                                                    role="checkbox"
-                                                                    tabIndex={-1}
-                                                                    key={index}
-                                                                >
-                                                                    {columns.map(column => {
-                                                                        const value = row[column.id];
-                                                                        return (
-                                                                            <TableCell key={column.id}>
-                                                                                {column.id === "action" ? (
-                                                                                    <MoreActions
-                                                                                        index={index}
-                                                                                        openDialog={this.openDialog}
-                                                                                        editTableCellData={
-                                                                                            this.editTableCellData
-                                                                                        }
-                                                                                        deleteTableCellData={
-                                                                                            this.deleteTableCellData
-                                                                                        }
-                                                                                    />
-                                                                                ) : column.id === "progress" ? (
-                                                                                    <CustomProgressBar
-                                                                                        progressValue={row.progress}
-                                                                                    />
-                                                                                ) : (
+                                                                {columns.map(column => {
+                                                                    const value = row[column.id];
+                                                                    return (
+                                                                        <TableCell key={column.id}>
+                                                                            {column.id === "action" ? (
+                                                                                <MoreActions
+                                                                                    index={index}
+                                                                                    openDialog={this.openDialog}
+                                                                                    editTableCellData={
+                                                                                        this.editTableCellData
+                                                                                    }
+                                                                                    deleteTableCellData={
+                                                                                        this.deleteTableCellData
+                                                                                    }
+                                                                                />
+                                                                            ) : column.id === "progress" ? (
+                                                                                <CustomProgressBar
+                                                                                    progressValue={row.progress}
+                                                                                />
+                                                                            ) : column.id === "drag" ? (
+                                                                                <span>
+                                                                                    {(this.state.dragIndex >= 0 &&
+                                                                                        this.state.dragIndex !== this.state.draggedIndex &&
+                                                                                        index === this.state.draggedIndex &&
+                                                                                        <span
+                                                                                            className={`drag-target-line ${this.state.draggedIndex <
+                                                                                                this.state.dragIndex
+                                                                                                ? 'drag-target-top'
+                                                                                                : ''}`}
+                                                                                        />) ||
+                                                                                        ''}
+                                                                                    <a
+                                                                                        className="drag-handle"
+                                                                                        draggable="false"
+                                                                                        onMouseDown={this.onMouseDown}
+                                                                                        href="/"
+                                                                                    >
+                                                                                        Drag
+                                                                                    </a>
+                                                                                </span>
+                                                                            ) : (
                                                                                             value
                                                                                         )}
-                                                                            </TableCell>
-                                                                        );
-                                                                    })}
-                                                                </TableRow>
-                                                            </Draggable>
+                                                                        </TableCell>
+                                                                    );
+                                                                })}
+                                                            </TableRow>
                                                         );
                                                     })
                                                 )}
