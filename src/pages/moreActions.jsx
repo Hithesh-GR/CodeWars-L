@@ -35,7 +35,7 @@ export default class MoreActions extends Component {
         });
     }
     addTableData = () => {
-        this.props.openDialog(true);
+        this.props.openDialog(this.props.index);
         this.hideMenuItems();
     }
     render() {
@@ -65,4 +65,3 @@ export default class MoreActions extends Component {
         );
     }
 }
-
