@@ -11,10 +11,10 @@ export default class MoreActions extends Component {
         };
     }
     componentDidMount() {
-        document.addEventListener("mousedown", this.hideMenuItems)
+        document.addEventListener("mousedown", this.hideMenuItems);
     }
     componentWillUnmount() {
-        document.removeEventListener("mousedown", this.hideMenuItems)
+        document.removeEventListener("mousedown", this.hideMenuItems);
     }
     showMenuItems = e => {
         this.setState({
@@ -33,11 +33,18 @@ export default class MoreActions extends Component {
         this.setState({
             anchorEl: null
         });
-    }
+    };
     addTableData = () => {
         this.props.openDialog(this.props.index);
         this.hideMenuItems();
+    };
+    editSubVersion = () => {
+        this.props.editSubVersion(this.props.index)
     }
+    deleteSubVersion = () => {
+        this.props.deleteSubVersion(this.props.index);
+        this.hideMenuItems();
+    };
     render() {
         const { anchorEl } = this.state;
         return (
@@ -57,9 +64,11 @@ export default class MoreActions extends Component {
                     open={Boolean(anchorEl)}
                     onClose={this.handleClose}
                 >
-                    <MenuItem onClick={this.addTableData}>Add</MenuItem>
-                    <MenuItem onClick={this.editTableData}>Edit</MenuItem>
-                    <MenuItem onClick={this.deleteTableRow}>Delete</MenuItem>
+                    {!this.props.isSubVersion && (
+                        <MenuItem onClick={this.addTableData}>Add</MenuItem>
+                    )}
+                    <MenuItem onClick={!this.props.isSubVersion ? this.editTableData : this.editSubVersion}>Edit</MenuItem>
+                    <MenuItem onClick={!this.props.isSubVersion ? this.deleteTableRow : this.deleteSubVersion}>Delete</MenuItem>
                 </Menu>
             </>
         );

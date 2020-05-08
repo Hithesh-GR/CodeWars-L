@@ -1,6 +1,14 @@
 import React from "react";
 import CustomDialog from "./customDialog";
-import { Table, TableBody, TableCell, TableHead, TableRow, TableContainer, Paper } from "@material-ui/core";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    TableContainer,
+    Paper
+} from "@material-ui/core";
 import Row from "./row";
 import {
     TextField,
@@ -61,7 +69,11 @@ export default class CollapsibleTable extends React.Component {
             description: "",
             status: "IN PROGRESS",
             progress: "0%",
-            addItemIndex: 0
+            addItemIndex: 0,
+            updateSubVersions: false,
+            rowIndex: null,
+            subversionRowIndex: null,
+            subVersionAdd: false,
         };
     }
     updateTableData = ({ target: { name, value } }) => {
@@ -79,72 +91,71 @@ export default class CollapsibleTable extends React.Component {
         });
     };
     addDataToTheTable = event => {
-        try {
-            const { version, startDate, releaseDate } = this.state;
-            event.preventDefault();
-            if (!version) {
-                alert("Enter required input fields data..!");
-            } else if (!startDate) {
-                alert("Start Date cannot be empty..!");
-            } else if (!releaseDate) {
-                alert("Release Date cannot be empty..!");
-            } else if (
-                !/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(
-                    startDate
-                )
-            ) {
-                alert("Invalid Start Date Format..!");
-            } else if (
-                !/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(
-                    releaseDate
-                )
-            ) {
-                alert("Invalid Release Date Format..!");
-            } else if (startDate > releaseDate) {
-                alert("Release Date should greater than Start Date..!");
+        const { version, startDate, releaseDate } = this.state;
+        event.preventDefault();
+        if (!version) {
+            alert("Enter required input fields data..!");
+        } else if (!startDate) {
+            alert("Start Date cannot be empty..!");
+        } else if (!releaseDate) {
+            alert("Release Date cannot be empty..!");
+        } else if (
+            !/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(
+                startDate
+            )
+        ) {
+            alert("Invalid Start Date Format..!");
+        } else if (
+            !/^([0-2][0-9]|(3)[0-1])(\/)(((0)[0-9])|((1)[0-2]))(\/)\d{4}$/.test(
+                releaseDate
+            )
+        ) {
+            alert("Invalid Release Date Format..!");
+        } else if (startDate > releaseDate) {
+            alert("Release Date should greater than Start Date..!");
+        } else {
+            const { version, startDate, releaseDate, description } = this.state;
+            let rowData = this.state.rows;
+            if (this.state.subVersionAdd) {
+                rowData[this.state.addItemIndex].subVersions = rowData[this.state.addItemIndex].subVersions || [];
+                rowData[this.state.addItemIndex].subVersions.push(
+                    this.createData(
+                        version,
+                        startDate,
+                        this.state.progress,
+                        releaseDate,
+                        description
+                    )
+                );
+                console.log("data", rowData)
             } else {
-                const { version, startDate, releaseDate, description } = this.state;
-                let rowData = this.state.rows;
-                console.log("rowdata", rowData)
-                if (this.state.dialogOpen) {
-                    rowData[this.state.addItemIndex].subVersions.push(
-                        this.createData(
-                            version,
-                            startDate,
-                            this.state.progress,
-                            releaseDate,
-                            description
-                        )
-                    );
-                } else {
-                    rowData.push(
-                        this.createData(
-                            version,
-                            startDate,
-                            this.state.progress,
-                            releaseDate,
-                            description
-                        )
-                    );
-                }
-
-                this.setState({
-                    rows: rowData,
-                    version: "",
-                    startDate: "",
-                    releaseDate: "",
-                    description: "",
-                    dialogOpen: false,
-                    isEditButton: false
-                });
+                rowData.push(
+                    this.createData(
+                        version,
+                        startDate,
+                        this.state.progress,
+                        releaseDate,
+                        description
+                    )
+                );
             }
-        } catch (err) {
-            console.log("error at addDataToTheTable");
+            console.log("data", rowData)
+            this.setState({
+                rows: rowData,
+                version: "",
+                startDate: "",
+                releaseDate: "",
+                description: "",
+                dialogOpen: false,
+                subVersionAdd: false,
+                isEditButton: false
+            });
+            console.log("thisstate", this.state.rows)
         }
     };
     createData = (version, startDate, progress, releaseDate, description) => {
         const { status } = this.state;
-        if (this.state.dialogOpen) {
+        if (this.state.subVersionAdd) {
             return { version, status, progress, startDate, releaseDate, description };
         } else {
             return {
@@ -201,6 +212,7 @@ export default class CollapsibleTable extends React.Component {
                     progress
                 } = this.state;
                 let rowData = this.state.rows;
+                console.log("ro", this.state.rows)
                 rowData[this.state.index] = this.createData(
                     version,
                     startDate,
@@ -208,6 +220,9 @@ export default class CollapsibleTable extends React.Component {
                     releaseDate,
                     description
                 );
+                console.log("this.state.rows[this.state.index].subVersions;", this.state.rows)
+                rowData[this.state.index].subVersions = this.state.rows[this.state.index].subVersions;
+                console.log("rowdata", rowData)
                 this.setState({
                     rows: rowData,
                     version: "",
@@ -224,6 +239,38 @@ export default class CollapsibleTable extends React.Component {
             console.log("error at updateTableCellData");
         }
     };
+    updateSubVersions = () => {
+        console.log("yes in pudated", this.state.subversionRowIndex, this.state.rowIndex)
+        const {
+            version,
+            startDate,
+            releaseDate,
+            description,
+            progress
+        } = this.state;
+        let rowData = this.state.rows;
+        rowData[this.state.rowIndex].subVersions[this.state.subversionRowIndex] = this.createData(
+            version,
+            startDate,
+            progress,
+            releaseDate,
+            description
+        );
+        this.setState({
+            rows: rowData,
+            version: "",
+            startDate: "",
+            releaseDate: "",
+            description: "",
+            dialogOpen: false,
+            rowIndex: null,
+            subVersionIndex: null,
+            updateSubVersions: false,
+            status: "IN PROGRESS",
+            progress: "0%",
+            isEditButton: false
+        });
+    }
     textFieldData = () => (
         <div
             className={this.state.dialogOpen ? "addEditTextField" : "textfieldRow"}
@@ -306,7 +353,7 @@ export default class CollapsibleTable extends React.Component {
                     variant="contained"
                     color="primary"
                     startIcon={<EditIcon />}
-                    onClick={this.updateTableCellData}
+                    onClick={this.state.updateSubVersions ? this.updateSubVersions : this.updateTableCellData}
                 >
                     Update
         </Button>
@@ -329,6 +376,13 @@ export default class CollapsibleTable extends React.Component {
             rows: rowData
         });
     };
+    deleteSubVersion = (subVersionIndex, index) => {
+        let rowData = this.state.rows;
+        rowData[index].subVersions.splice(subVersionIndex, 1);
+        this.setState({
+            rows: rowData
+        });
+    }
     editTableCellData = i => {
         const { rows } = this.state;
         this.setState({
@@ -341,14 +395,29 @@ export default class CollapsibleTable extends React.Component {
             index: i
         });
     };
+    editSubVersion = (subVersionIndex, i) => {
+        const { rows } = this.state;
+        this.setState({
+            dialogOpen: true,
+            isEditButton: true,
+            updateSubVersions: true,
+            subversionRowIndex: subVersionIndex,
+            rowIndex: i,
+            version: rows[i].subVersions[subVersionIndex].version,
+            startDate: rows[i].subVersions[subVersionIndex].startDate,
+            releaseDate: rows[i].subVersions[subVersionIndex].releaseDate,
+            description: rows[i].subVersions[subVersionIndex].description,
+            index: i
+        });
+    }
     openDialog = i => {
         this.setState({
             dialogOpen: true,
+            subVersionAdd: true,
             addItemIndex: i
         });
     };
     render() {
-        console.log("rows", this.state.addItemIndex);
         return (
             <MuiThemeProvider theme={theme}>
                 <AppBar position="static" align="center">
@@ -380,7 +449,7 @@ export default class CollapsibleTable extends React.Component {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {!this.state.rows.length ?
+                                {!this.state.rows.length ? (
                                     <p
                                         style={{
                                             display: "flex",
@@ -389,17 +458,21 @@ export default class CollapsibleTable extends React.Component {
                                         }}
                                     >
                                         There is no data to display...!
-                                    </p> :
-                                    this.state.rows.map((row, index) => (
-                                        <Row
-                                            key={row.version}
-                                            row={row}
-                                            index={index}
-                                            deleteRow={this.deleteRow}
-                                            openDialog={this.openDialog}
-                                            editTableCellData={this.editTableCellData}
-                                        />
-                                    ))}
+                  </p>
+                                ) : (
+                                        this.state.rows.map((row, index) => (
+                                            <Row
+                                                key={row.version}
+                                                row={row}
+                                                index={index}
+                                                deleteRow={this.deleteRow}
+                                                openDialog={this.openDialog}
+                                                editTableCellData={this.editTableCellData}
+                                                deleteSubVersion={this.deleteSubVersion}
+                                                editSubVersion={this.editSubVersion}
+                                            />
+                                        ))
+                                    )}
                             </TableBody>
                         </Table>
                     </TableContainer>

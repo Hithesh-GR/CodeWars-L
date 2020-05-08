@@ -10,7 +10,7 @@ export default class Row extends Component {
         super(props);
         this.state = {
             open: false,
-            dialogOpen: false
+            dialogOpen: false,
         };
     }
     openDialog = i => {
@@ -22,6 +22,12 @@ export default class Row extends Component {
     deleteTableCellData = ind => {
         this.props.deleteRow(ind);
     };
+    deleteSubVersion = ind => {
+        this.props.deleteSubVersion(ind, this.props.index)
+    }
+    editSubVersion = (ind) => {
+        this.props.editSubVersion(ind, this.props.index)
+    }
     render() {
         const { row } = this.props;
         return (
@@ -80,7 +86,7 @@ export default class Row extends Component {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {row.subVersions.map(subVersion => (
+                                        {row.subVersions && row.subVersions.map((subVersion, index) => (
                                             <TableRow key={subVersion.version}>
                                                 <TableCell />
                                                 <TableCell component="th" scope="row">
@@ -94,8 +100,11 @@ export default class Row extends Component {
                                                 <TableCell>{subVersion.releaseDate}</TableCell>
                                                 <TableCell>{subVersion.description}</TableCell>
                                                 <MoreActions
-                                                    index
+                                                    index={index}
+                                                    isSubVersion={true}
                                                     openDialog={this.openDialog}
+                                                    deleteSubVersion={this.deleteSubVersion}
+                                                    editSubVersion={this.editSubVersion}
                                                     editTableCellData={
                                                         this.editTableCellData
                                                     }
